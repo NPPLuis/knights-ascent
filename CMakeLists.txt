@@ -48,9 +48,7 @@ include(cmake/CopyHelper.cmake)
 
 ###############################################################################
 
-# NOTE: update executable name in .github/workflows/cmake.yml:25 when changing name here
-add_executable(${MAIN_EXECUTABLE_NAME}
-    main.cpp
+set(GAME_SOURCES
         src/stats.cpp
         include/stats.h
         src/monster.cpp
@@ -75,7 +73,29 @@ add_executable(${MAIN_EXECUTABLE_NAME}
         include/weapon.h
         src/armor.cpp
         include/armor.h
+        include/inventory.h
+        include/utils.h
 )
+
+# NOTE: update executable name in .github/workflows/cmake.yml:25 when changing name here
+add_executable(${MAIN_EXECUTABLE_NAME}
+    main.cpp
+    ${GAME_SOURCES}
+)
+
+enable_testing()
+set(TEST_EXECUTABLE_NAME "combat_tests")
+add_executable(${TEST_EXECUTABLE_NAME}
+    tests/test_combat.cpp
+    ${GAME_SOURCES}
+)
+target_include_directories(${TEST_EXECUTABLE_NAME} PRIVATE
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
+)
+if(MINGW)
+    target_link_options(${TEST_EXECUTABLE_NAME} PRIVATE -static)
+endif()
+add_test(NAME ${TEST_EXECUTABLE_NAME} COMMAND ${TEST_EXECUTABLE_NAME})
 #target_sources(${MAIN_EXECUTABLE_NAME}
     ##PRIVATE
        # src/Example.cpp
@@ -83,7 +103,7 @@ add_executable(${MAIN_EXECUTABLE_NAME}
 
 # NOTE: Add all defined targets (e.g. executables, libraries, etc. )
 # NOTE: RUN_SANITIZERS is optional, if it's not present it will default to true
-set_compiler_flags(RUN_SANITIZERS ${USE_ASAN} TARGET_NAMES ${MAIN_EXECUTABLE_NAME})
+set_compiler_flags(RUN_SANITIZERS ${USE_ASAN} TARGET_NAMES ${MAIN_EXECUTABLE_NAME} ${TEST_EXECUTABLE_NAME})
 # set_compiler_flags(TARGET_NAMES ${MAIN_EXECUTABLE_NAME} ${FOO} ${BAR})
 # where ${FOO} and ${BAR} represent additional executables or libraries
 # you want to compile with the set compiler flags

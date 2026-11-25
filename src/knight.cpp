@@ -29,7 +29,7 @@ Knight& Knight::operator=(const Knight& other) {
 }
 
 Knight::~Knight() {
-    std::cout << "Cavalerul " << name << " s-a despwanat" << std::endl;
+    std::cout << "Cavalerul " << name << " s-a despawnat" << std::endl;
 }
 
 int Knight::getTotalAttack() const {
@@ -62,7 +62,7 @@ std::ostream& operator<<(std::ostream& os, const Knight& k) {
 void Knight::receiveDamage(int damage_amount) {
     const int hp_baza = stats.getHp();
     stats.setHp(hp_baza - damage_amount);
-    std::cout << "HP ramas: " << getTotalHP() << std::endl;
+    std::cout << name << ": HP ramas " << getTotalHP() << std::endl;
 }
 
 void Knight::attackMonster(Monster& target) const {
@@ -74,11 +74,18 @@ void Knight::attackMonster(Monster& target) const {
     target.receiveDamage(damage);
 }
 
-void Knight::fight(const Battle& battle) {
+void Knight::fight(Battle& battle) {
     if (!isAlive()) {
         throw DeadKnightException(name);
     }
+    if (battle.finished()) {
+        return;
+    }
     const int boosted = battle.dragonSlayerBonus(getTotalAttack());
     std::cout << name << " loveste cu " << boosted << " damage!\n";
+    if (battle.strikeCurrent(boosted)) {
+        battle.advance();
+        return;
+    }
     battle.runRound(*this);
 }

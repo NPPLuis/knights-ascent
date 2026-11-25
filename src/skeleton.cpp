@@ -15,6 +15,16 @@ void Skeleton::specialAttack(Knight& target) const {
     target.receiveDamage(hit);
 }
 
+bool Skeleton::tryRevive() {
+    if (reviveCharges <= 0) {
+        return false;
+    }
+    --reviveCharges;
+    restoreHp(getMaxHp() / 2);
+    std::cout << getName() << " isi aduna oasele si se ridica din nou cu " << getHp() << " HP!\n";
+    return true;
+}
+
 void Skeleton::printExtra(std::ostream& os) const {
     os << " [Skeleton, reinvieri ramase=" << reviveCharges << "]";
 }

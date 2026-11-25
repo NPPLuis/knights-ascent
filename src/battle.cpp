@@ -52,6 +52,12 @@ int Battle::dragonSlayerBonus(int base_damage) const {
     return base_damage;
 }
 
+bool Battle::strikeCurrent(int damage) {
+    if (!current) return false;
+    current->receiveDamage(damage);
+    return !current->isAlive();
+}
+
 void Battle::runRound(Knight& hero) const {
     if (!current) return;
     current->specialAttack(hero);

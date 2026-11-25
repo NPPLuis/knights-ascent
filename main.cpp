@@ -76,8 +76,6 @@ int main() {
 
         while (!arena.finished() && karl.isAlive()) {
             karl.fight(arena);
-            arena.runRound(karl);
-            arena.advance();
             std::cout << "---\n";
         }
 

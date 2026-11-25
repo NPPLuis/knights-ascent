@@ -12,10 +12,14 @@ class Monster {
 private:
     std::string name;
     int hp;
+    int maxHp;
     int damage;
 
 protected:
     virtual void printExtra(std::ostream& os) const;
+
+    virtual bool tryRevive();
+    void restoreHp(int amount);
 
 public:
     Monster(std::string name_val, int hp_val, int damage_val);
@@ -30,6 +34,7 @@ public:
     void receiveDamage(int amount);
 
     [[nodiscard]] int getHp() const;
+    [[nodiscard]] int getMaxHp() const;
     [[nodiscard]] const std::string& getName() const;
     [[nodiscard]] int getDamage() const;
     [[nodiscard]] bool isAlive() const;

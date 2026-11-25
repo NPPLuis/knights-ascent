@@ -136,22 +136,22 @@ jobs:
             runs_valgrind: true
 
             # renovate: depName=macos
-          - os: macos-14
+          - os: macos-15
             c: clang
             cxx: clang++
             # renovate: depName=macos
-            name: "macOS 14 Apple Clang 15"
+            name: "macOS 15 Apple Clang"
             cmake_flags: "-DUSE_ASAN=OFF -DBUILD_SHARED_LIBS=ON"
             cmake_generator: Ninja
             # This env does not currently run address sanitizers
             runs_asan: false
 
             # renovate: depName=macos
-          - os: macos-14
-            c: gcc-13
-            cxx: g++-13
+          - os: macos-15
+            c: gcc-14
+            cxx: g++-14
             # renovate: depName=macos
-            name: "macOS 14 GCC 13"
+            name: "macOS 15 GCC 14"
             cmake_flags: "-DBUILD_SHARED_LIBS=OFF"
             cmake_generator: Ninja
 
@@ -212,6 +212,11 @@ jobs:
       - name: Build
         run: |
           bash ./scripts/cmake.sh build -c ${{ env.BUILD_TYPE }}
+
+      - name: Tests
+        if: ${{ !(matrix.cxx == 'cl' && matrix.runs_asan == true) }}
+        run: |
+          ctest --test-dir ${{ env.BUILD_DIR }} -C ${{ env.BUILD_TYPE }} --output-on-failure
 
       - name: Install
         # Use CMake to "install" build artifacts (only interested in CMake registered targets) to our custom artifacts directory

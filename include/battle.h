@@ -26,6 +26,7 @@ public:
     friend void swap(Battle& a, Battle& b) noexcept;
 
     void advance();
+    bool strikeCurrent(int damage);
     void runRound(Knight& hero) const;
     [[nodiscard]] int dragonSlayerBonus(int base_damage) const;
     [[nodiscard]] bool finished() const;

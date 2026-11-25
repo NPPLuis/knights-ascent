@@ -213,6 +213,11 @@ jobs:
         run: |
           bash ./scripts/cmake.sh build -c ${{ env.BUILD_TYPE }}
 
+      - name: Tests
+        if: ${{ !(matrix.cxx == 'cl' && matrix.runs_asan == true) }}
+        run: |
+          ctest --test-dir ${{ env.BUILD_DIR }} -C ${{ env.BUILD_TYPE }} --output-on-failure
+
       - name: Install
         # Use CMake to "install" build artifacts (only interested in CMake registered targets) to our custom artifacts directory
         run: |

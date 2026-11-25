@@ -4,9 +4,6 @@
 #include "monster.h"
 
 class Orc : public Monster {
-private:
-    int maxHp;
-
 protected:
     void printExtra(std::ostream& os) const override;
 

@@ -9,6 +9,7 @@ private:
 
 protected:
     void printExtra(std::ostream& os) const override;
+    bool tryRevive() override;
 
 public:
     Skeleton(const std::string& name_val, int hp_val, int damage_val, int revives_val);

@@ -22,14 +22,20 @@
 
 namespace {
 
-int failures = 0;
+class Checker {
+private:
+    int failures = 0;
 
-void check(bool condition, const std::string& what) {
-    if (!condition) {
-        ++failures;
-        std::cerr << "  FAIL: " << what << "\n";
+public:
+    void check(bool condition, const std::string& what) {
+        if (!condition) {
+            ++failures;
+            std::cerr << "  FAIL: " << what << "\n";
+        }
     }
-}
+
+    [[nodiscard]] bool passed() const { return failures == 0; }
+};
 
 class SilenceCout {
 private:
@@ -72,60 +78,60 @@ bool throwsException(const std::function<void()>& action) {
     return false;
 }
 
-void monsterDiesAtZeroHp() {
+void monsterDiesAtZeroHp(Checker& c) {
     Goblin g("Grik", 60, 10);
     g.receiveDamage(65);
-    check(!g.isAlive(), "goblinul ar trebui sa moara dupa 65 damage la 60 HP");
-    check(g.getHp() == 0, "HP-ul nu ar trebui sa scada sub 0");
+    c.check(!g.isAlive(), "goblinul ar trebui sa moara dupa 65 damage la 60 HP");
+    c.check(g.getHp() == 0, "HP-ul nu ar trebui sa scada sub 0");
 }
 
-void knightDamagesMonsterAndMonsterRespondsOnce() {
+void knightDamagesMonsterAndMonsterRespondsOnce(Checker& c) {
     Knight hero = makeKnight(100, 50);
     Battle arena("Test", single(std::make_unique<Orc>("Brutus", 120, 10)));
 
     hero.fight(arena);
-    check(hero.getTotalHP() == 90, "dupa runda 1 cavalerul ar trebui sa aiba 90 HP");
-    check(!arena.finished(), "orcul ar trebui sa supravietuiasca primei lovituri");
+    c.check(hero.getTotalHP() == 90, "dupa runda 1 cavalerul ar trebui sa aiba 90 HP");
+    c.check(!arena.finished(), "orcul ar trebui sa supravietuiasca primei lovituri");
 
     hero.fight(arena);
-    check(hero.getTotalHP() == 75, "orcul infuriat ar trebui sa dea 15 damage");
+    c.check(hero.getTotalHP() == 75, "orcul infuriat ar trebui sa dea 15 damage");
 
     hero.fight(arena);
-    check(hero.getTotalHP() == 75, "un monstru invins nu ar trebui sa mai atace");
-    check(arena.finished(), "arena ar trebui sa fie goala dupa ce orcul moare");
+    c.check(hero.getTotalHP() == 75, "un monstru invins nu ar trebui sa mai atace");
+    c.check(arena.finished(), "arena ar trebui sa fie goala dupa ce orcul moare");
 }
 
-void goblinAttacksTwiceOnlyAboveHalfHp() {
+void goblinAttacksTwiceOnlyAboveHalfHp(Checker& c) {
     Knight hero = makeKnight(100, 0);
     Goblin g("Snik", 60, 10);
 
     g.specialAttack(hero);
-    check(hero.getTotalHP() == 80, "goblinul sanatos ar trebui sa atace de 2 ori");
+    c.check(hero.getTotalHP() == 80, "goblinul sanatos ar trebui sa atace de 2 ori");
 
     g.receiveDamage(30);
     g.specialAttack(hero);
-    check(hero.getTotalHP() == 70, "goblinul ranit ar trebui sa atace o singura data");
+    c.check(hero.getTotalHP() == 70, "goblinul ranit ar trebui sa atace o singura data");
 }
 
-void skeletonRevivesExactlyOnce() {
+void skeletonRevivesExactlyOnce(Checker& c) {
     Skeleton s("Rattle", 70, 5, 1);
     s.receiveDamage(70);
-    check(s.isAlive(), "scheletul ar trebui sa invie prima data");
-    check(s.getHp() == 35, "scheletul ar trebui sa invie cu jumatate din viata");
+    c.check(s.isAlive(), "scheletul ar trebui sa invie prima data");
+    c.check(s.getHp() == 35, "scheletul ar trebui sa invie cu jumatate din viata");
 
     s.receiveDamage(35);
-    check(!s.isAlive(), "scheletul fara reinvieri ar trebui sa ramana mort");
+    c.check(!s.isAlive(), "scheletul fara reinvieri ar trebui sa ramana mort");
 }
 
-void dragonSlayerBonusOnlyAgainstDragons() {
+void dragonSlayerBonusOnlyAgainstDragons(Checker& c) {
     const Battle vsDragon("Test", single(std::make_unique<Dragon>("Smaug", 200, 35, 20)));
-    check(vsDragon.dragonSlayerBonus(40) == 65, "bonusul contra dragonului: 40 + 40/2 + 20/4 = 65");
+    c.check(vsDragon.dragonSlayerBonus(40) == 65, "bonusul contra dragonului: 40 + 40/2 + 20/4 = 65");
 
     const Battle vsGoblin("Test", single(std::make_unique<Goblin>("Grik", 60, 10)));
-    check(vsGoblin.dragonSlayerBonus(40) == 40, "fara bonus contra altor monstri");
+    c.check(vsGoblin.dragonSlayerBonus(40) == 40, "fara bonus contra altor monstri");
 }
 
-void fullArenaMatchesExpectedOutcome() {
+void fullArenaMatchesExpectedOutcome(Checker& c) {
     const auto path = writeTempFile("knights_ascent_arena.txt",
                                     "goblin Grik 60 15\n"
                                     "skeleton Rattle 70 18 1\n"
@@ -142,46 +148,46 @@ void fullArenaMatchesExpectedOutcome() {
     }
     std::filesystem::remove(path);
 
-    check(arena.finished(), "Karl ar trebui sa curete arena");
-    check(rounds == 9, "lupta ar trebui sa dureze 9 runde, a durat " + std::to_string(rounds));
-    check(karl.getTotalHP() == 129, "Karl ar trebui sa termine cu 129 HP, are " + std::to_string(karl.getTotalHP()));
+    c.check(arena.finished(), "Karl ar trebui sa curete arena");
+    c.check(rounds == 9, "lupta ar trebui sa dureze 9 runde, a durat " + std::to_string(rounds));
+    c.check(karl.getTotalHP() == 129, "Karl ar trebui sa termine cu 129 HP, are " + std::to_string(karl.getTotalHP()));
 }
 
-void battleCopyIsIndependent() {
+void battleCopyIsIndependent(Checker& c) {
     const Battle original("Test", single(std::make_unique<Goblin>("Grik", 60, 10)));
     Battle copy = original;
     Knight hero = makeKnight(100, 100);
     hero.fight(copy);
-    check(copy.finished(), "copia ar trebui sa fie terminata");
-    check(!original.finished(), "originalul nu ar trebui afectat de lupta din copie");
+    c.check(copy.finished(), "copia ar trebui sa fie terminata");
+    c.check(!original.finished(), "originalul nu ar trebui afectat de lupta din copie");
 }
 
-void loaderRejectsBadFiles() {
-    check(throwsException<MonsterFileException>([] {
+void loaderRejectsBadFiles(Checker& c) {
+    c.check(throwsException<MonsterFileException>([] {
               (void)MonsterLoader::loadFromFile("nu_exista.txt");
           }),
           "fisier lipsa -> MonsterFileException");
 
     const auto unknown = writeTempFile("knights_ascent_unknown.txt", "troll Bob 10 10\n");
-    check(throwsException<MonsterFileException>([&] {
+    c.check(throwsException<MonsterFileException>([&] {
               (void)MonsterLoader::loadFromFile(unknown.string());
           }),
           "tip de monstru necunoscut -> MonsterFileException");
     std::filesystem::remove(unknown);
 
     const auto empty = writeTempFile("knights_ascent_empty.txt", "# doar comentarii\n");
-    check(throwsException<MonsterFileException>([&] {
+    c.check(throwsException<MonsterFileException>([&] {
               (void)MonsterLoader::loadFromFile(empty.string());
           }),
           "fisier fara monstri -> MonsterFileException");
     std::filesystem::remove(empty);
 }
 
-void invalidStateThrows() {
-    check(throwsException<InvalidStatsException>([] { (void)Stats(-1, 5); }),
+void invalidStateThrows(Checker& c) {
+    c.check(throwsException<InvalidStatsException>([] { (void)Stats(-1, 5); }),
           "HP negativ -> InvalidStatsException");
 
-    check(throwsException<DeadKnightException>([] {
+    c.check(throwsException<DeadKnightException>([] {
               Knight ghost = makeKnight(0, 5);
               Battle arena("Test", single(std::make_unique<Goblin>("Grik", 60, 10)));
               ghost.fight(arena);
@@ -192,7 +198,7 @@ void invalidStateThrows() {
 }
 
 int main() {
-    const std::vector<std::pair<std::string, void (*)()>> tests = {
+    const std::vector<std::pair<std::string, void (*)(Checker&)>> tests = {
         {"monsterDiesAtZeroHp", monsterDiesAtZeroHp},
         {"knightDamagesMonsterAndMonsterRespondsOnce", knightDamagesMonsterAndMonsterRespondsOnce},
         {"goblinAttacksTwiceOnlyAboveHalfHp", goblinAttacksTwiceOnlyAboveHalfHp},
@@ -204,15 +210,17 @@ int main() {
         {"invalidStateThrows", invalidStateThrows},
     };
 
+    bool allPassed = true;
     for (const auto& [name, test] : tests) {
-        const int before = failures;
+        Checker checker;
         {
             const SilenceCout silence;
-            test();
+            test(checker);
         }
-        std::cout << (failures == before ? "[ OK ]   " : "[FAIL]   ") << name << "\n";
+        allPassed = allPassed && checker.passed();
+        std::cout << (checker.passed() ? "[ OK ]   " : "[FAIL]   ") << name << "\n";
     }
 
-    std::cout << "\n" << (failures == 0 ? "Toate testele au trecut." : "Unele teste au picat.") << "\n";
-    return failures == 0 ? 0 : 1;
+    std::cout << "\n" << (allPassed ? "Toate testele au trecut." : "Unele teste au picat.") << "\n";
+    return allPassed ? 0 : 1;
 }

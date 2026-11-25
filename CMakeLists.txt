@@ -92,6 +92,9 @@ add_executable(${TEST_EXECUTABLE_NAME}
 target_include_directories(${TEST_EXECUTABLE_NAME} PRIVATE
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
 )
+if(MINGW)
+    target_link_options(${TEST_EXECUTABLE_NAME} PRIVATE -static)
+endif()
 add_test(NAME ${TEST_EXECUTABLE_NAME} COMMAND ${TEST_EXECUTABLE_NAME})
 #target_sources(${MAIN_EXECUTABLE_NAME}
     ##PRIVATE
